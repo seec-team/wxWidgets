@@ -119,7 +119,7 @@ after_success:
 deploy:
   provider: releases
   api_key:
-    secure: 
+    secure: zqY186g85Ic6/CPHicdxmsV5hmip3KTpR5ux/5V3FjkII0vxGYXIztt7xe8+qARy1qoQWgKYuvJyyLVnpMeXpHZCcELnMFdrfvNSx0k4+36IqIfLHQhcheQOra5yTb8fHL4fz1cm9I5TpOUe/mkM0Sr5e9m5YVMhOPiqa7ssJ10op8fPMVc8zfR7BLEKkXrkPLTXKrevW0Hyp2J64V1H+7v98OMqoU5zi6J7vpSW3bdbqOysFSd7QpEw3FQWaHkpDNEZuGzxvd85NF3jhxGZc4PEJMUie1Hy4HXLHx6l+n9QenUwA0+hB9simbyDDeJkwfodveyzxfnmF6my7wb1vCeNKnS24PHLHeq5hO/vVOwwj8KZKgHnF/NKH+AMAioULjfqeKOZ1YwztvrgFgLH60G3wt+Y/3mUmM+l+xTuAcV2K2LTwUZqI8iEmWqjlNkK8eNxOIOyZ9rjw6/7H1al0ueTvjbF0HuWBFH1EkPe6J0p75F0C+gDF54tByyWi64ieXPEgCZnhQ5vyUokFBGgi5bcW5tvqguVLuiIjTc0t9tlhggJSyZ5e7orfnG65cAV/1n86XnGVlk8dVVd3C83JCw2FABdTzIW3SBabbhh3XeY/arqXb8MXeZi1uGBzVyRE5cdvHc2xs3GZFhvq2SgyATjMWJ7LjkaqkGpGbOWsGc=
   file: "${TRAVIS_BUILD_DIR}/${WX_BUILT_XZ_FILENAME}"
   skip_cleanup: true
   on:
