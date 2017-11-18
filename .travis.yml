@@ -3,38 +3,127 @@
 # It is used automatically for the repositories on Github if it's found in the
 # root directory of the project.
 language: cpp
-sudo: required
-
-compiler: gcc
 
 branches:
     only:
-        - master
+        - travis_test
 
-notifications:
-    email:
-        recipients:
-            - vadim@wxwidgets.org
-        on_success: change
-        on_failure: change
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      compiler: clang
+      addons:
+        apt:
+          packages:
+          - libgtk-3-dev
+          - libwebkitgtk-3.0-dev
+      env: 
+        - COMPILER_CXX=clang++
+        - COMPILER_CC=clang
+    - os: linux
+      dist: trusty
+      compiler: clang
+      addons:
+        apt:
+          sources:
+          - llvm-toolchain-trusty-4.0
+          packages:
+          - clang-4.0
+          - libgtk-3-dev
+          - libwebkitgtk-3.0-dev
+      env: 
+        - COMPILER_CXX=clang++-4.0
+        - COMPILER_CC=clang-4.0
+    - os: linux
+      dist: trusty
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - gcc-6
+          - g++-6
+          - libgtk-3-dev
+          - libwebkitgtk-3.0-dev
+      env:
+        - COMPILER_CXX=g++-6
+        - COMPILER_CC=gcc-6
+    - os: linux
+      dist: trusty
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - gcc-7
+          - g++-7
+          - libgtk-3-dev
+          - libwebkitgtk-3.0-dev
+      env:
+        - COMPILER_CXX=g++-7
+        - COMPILER_CC=gcc-7
+    - os: osx
+      osx_image: xcode7.3
+      compiler: clang
+      env: 
+        - THE_OSX_IMAGE=xcode7.3
+        - COMPILER_CXX=clang++
+        - COMPILER_CC=clang
+    - os: osx
+      osx_image: xcode9
+      compiler: clang
+      env: 
+        - THE_OSX_IMAGE=xcode9
+        - COMPILER_CXX=clang++
+        - COMPILER_CC=clang
 
-before_install:
-    - sudo apt-get update
-    - sudo apt-get install -y libcppunit-dev
 
-env:
-    - wxCONFIGURE_FLAGS=
-    - wxCONFIGURE_FLAGS="--disable-shared"
-    - wxCONFIGURE_FLAGS="--disable-precomp-headers --enable-monolithic"
-    - wxCONFIGURE_FLAGS="--enable-stl" CXXFLAGS=-std=c++0x
+install:
+  - DEPS_DIR="${HOME}/deps"
+  - DEPS_INSTALL="${DEPS_DIR}/install"
+  - mkdir -p ${DEPS_DIR}
+  - mkdir -p ${DEPS_INSTALL}
 
 script:
-    - ./configure --disable-optimise $wxCONFIGURE_FLAGS
+    - |
+      WX_COMMON="--disable-shared --enable-webview --without-libtiff --without-regex --enable-stl"
+      WX_CFLAGS="-fPIC -Wno-potentially-evaluated-expression"
+      WX_CXXFLAGS="-std=c++11 -fPIC -fvisibility-inlines-hidden -Wno-potentially-evaluated-expression"
+      if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+        ./configure ${WX_COMMON} CFLAGS="${WX_CFLAGS}" CXXFLAGS="${WX_CXXFLAGS}" --prefix=${DEPS_INSTALL}
+      elif [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+        ./configure ${WX_COMMON} CFLAGS="${WX_CFLAGS}" CXXFLAGS="${WX_CXXFLAGS} -stdlib=libc++" OBJCXXFLAGS="${WX_CXXFLAGS} -stdlib=libc++" LDFLAGS="-stdlib=libc++" --with-macosx-version-min=10.7 --prefix=${DEPS_INSTALL}
+      fi
     - make
-    - make -C tests
-    - pushd tests
-    - ./test -t
-    - popd
-    - make samples
-    - sudo make install
-    - make -C samples/minimal -f makefile.unx
+    - make install
+
+#
+# Compress the install directory for deployment.
+#
+after_success:
+- |
+  cd ${TRAVIS_BUILD_DIR}
+  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+    WX_BUILT_XZ_FILENAME="seec_wx_travis_build_${TRAVIS_OS_NAME}_${THE_OSX_IMAGE}_${CC}.tar.xz"
+  else
+    WX_BUILT_XZ_FILENAME="seec_wx_travis_build_${TRAVIS_OS_NAME}_${CC}.tar.xz"
+  fi
+  tar -cJf ${TRAVIS_BUILD_DIR}/${WX_BUILT_XZ_FILENAME} -C ${DEPS_INSTALL} .
+
+#
+# For tagged releases, push the compressed install directory to GitHub.
+#
+deploy:
+  provider: releases
+  api_key:
+    secure: 
+  file: "${TRAVIS_BUILD_DIR}/${WX_BUILT_XZ_FILENAME}"
+  skip_cleanup: true
+  on:
+    tags: true
+    repo: seec-team/wxWidgets
+    branch: travis_test
+
