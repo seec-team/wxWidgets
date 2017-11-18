@@ -7,6 +7,7 @@ language: cpp
 branches:
     only:
         - travis_test
+        - /seec_travis_v.*/
 
 matrix:
   include:
@@ -97,7 +98,7 @@ script:
       elif [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
         ./configure ${WX_COMMON} CFLAGS="${WX_CFLAGS}" CXXFLAGS="${WX_CXXFLAGS} -stdlib=libc++" OBJCXXFLAGS="${WX_CXXFLAGS} -stdlib=libc++" LDFLAGS="-stdlib=libc++" --with-macosx-version-min=10.7 --prefix=${DEPS_INSTALL}
       fi
-    - make
+    - make -j4
     - make install
 
 #
@@ -125,5 +126,4 @@ deploy:
   on:
     tags: true
     repo: seec-team/wxWidgets
-    branch: travis_test
 
