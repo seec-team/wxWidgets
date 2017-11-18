@@ -81,6 +81,8 @@ matrix:
         - COMPILER_CXX=clang++
         - COMPILER_CC=clang
 
+before_install:
+  - export CXX="${COMPILER_CXX}" CC="${COMPILER_CC}"
 
 install:
   - DEPS_DIR="${HOME}/deps"
